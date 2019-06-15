@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+service RateLimitService {
+    // Provides info about whether the rate limit should apply or not.
+    rpc RateLimit (RateLimitRequest) returns (RateLimitResponse);
+}
+
+// The main request message made to the RateLimitService.
+message RateLimitRequest {
+    // The owner of the target resource. Usually the service name from where
+    // the request was made. Used for storing the hits in a dedicated bucket
+    // per service.
+    //
+    // Examples:
+    //   1. my-awesome-service
+    string owner = 1;
+
+    // The target resource behind the rate limit.
+    //
+    // Examples:
+    //   1. /v1/order/pay
+    //   2. /v1/order/pay#customer123
+    //   3. graphql_resolver_root
+    string resource = 2;
+}
+
+// The response of RateLimit. Strongly based on Envoy.
+// See https://github.com/envoyproxy/envoy/blob/master/api/envoy/service/ratelimit/v2/rls.proto
+message RateLimitResponse {
+    enum Code {
+        UNKNOWN = 0;
+        OK = 1;
+        OVER_LIMIT = 2;
+    }
+
+    Code code = 1;
+}
