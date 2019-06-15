@@ -51,6 +51,16 @@ The protobuf files can be found in [/api/proto](/api/proto) and the Go code can 
 go generate ./...
 ``` 
 
+#### Command line client
+In case you want to do some calls to the server, you can install the `grpc_cli` tool from 
+[here](https://github.com/grpc/grpc/blob/master/doc/command_line_tool.md). 
+
+Example:
+
+```bash
+grpc_cli call localhost:50051 RateLimit "owner: 'my-awesome-service', resource: '/v1/user/register'"
+```
+
 ## Contributing
 
 TODO
