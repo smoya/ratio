@@ -36,9 +36,14 @@ in second position a Partition Tolerant one. We do not really care about consist
     > because the cache will not contain a copy of the whole database but just a list of most recently used. Otherwise each service
     > instance will require a potentially big a mount of memory (at least the same as Redis). 
   - The hit wil not be directly persisted in Redis but eventually. The client should not wait such write.
+
+## Rate limit algorithm
+The chosen algorithm for calculating the rate limit is "Slide window of timestamps" (this is how I called).
+Please see more details in the [algorithm](README.md#algorithm) section of the docs readme.  
   
 # Discarded ideas
 
+### Architecture
 - In order to distribute the hits avoiding the needs for a single datastore, I though about adding a proxy in front of
   the services fleet in order to shard the calls, so each service instance will just keep a local in memory database as 
   all the hits for a given source will be always hitting the same instance. Two problems related:
@@ -49,3 +54,44 @@ in second position a Partition Tolerant one. We do not really care about consist
     3. The proxy could become a single point of failure.
 - In addition to the previous point, I also considered using sticky sessions as alternative to the sharding, but the 
   problems are very similar.
+
+### Rate limit algorithm
+
+#### Token bucket
+At a first glance, the [Token bucket](https://en.wikipedia.org/wiki/Token_bucket), AKA [Leaky bucket as a meter](https://en.wikipedia.org/wiki/Leaky_bucket#As_a_meter), seems to be the most used algorithm 
+in rate limit services. Here a brief explanation about the algorithm applied to our rate limit service:
+
+- Each combination of owner + resource would have a bucket associated.
+- Such bucket will contain tokens.
+- Every time it receives a hit, the number of tokens should be checked:
+  - If there are no tokens, the rate limit should apply.
+  - Otherwise, a token get subtracted from the bucket.
+- From time to time (the rate you want to set), the tokens should be refilled.
+
+- Pros:
+  - Space: It can be represented as a counter (integer) per owner + resource.
+- Cons:
+  - Need a process refilling the buckets periodically.
+  - The algorithm is not slide window base: It could lead in to the problem of allowing eventually the double of hits 
+    that it should. Explanation:
+    - Let's say the bucket is full (100 tokens) at 09:00:00. 
+    - At 09:00:59 100 hits are received and allowed, so the bucket gets empty.
+    - At 09:01:00 the bucket gets refilled.
+    - At 09:01:01 100 hits are received and allowed. 
+    - Problem: 200 hits were performed in less than 3 seconds. 
+    
+I discarded this algorithm specially because of the second cons.
+
+#### Token bucket + storing timestamp
+The idea behind this alternative would be storing number of tokens and a timestamp of the last refill operation:
+
+- When a hit is received, we fetch such timestamp in order to calculate the number of tokens that, in theory, has 
+  been refilled since the last hit.
+  
+- Pros:
+  - The refill process is not needed anymore.
+  - Space needed is still small.
+- Cons:
+  - Still no slide window based.
+
+I discarded this algorithm specially because of the cons.
