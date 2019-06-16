@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/smoya/ratio/pkg/rate"
+
 	"github.com/kelseyhightower/envconfig"
 
 	"github.com/smoya/ratio/internal/server"
@@ -37,7 +39,13 @@ func main() {
 	}
 	s := grpc.NewServer(grpc.ConnectionTimeout(c.ConnectionTimeout))
 	reflection.Register(s)
-	ratio.RegisterRateLimitServiceServer(s, &server.GRPC{})
+
+	grpcServer := server.NewGRPC(
+		rate.NewLimit(time.Minute, 5),
+		rate.InMemorySlideWindowRateLimiter(make(map[string][]time.Time), false),
+	)
+
+	ratio.RegisterRateLimitServiceServer(s, grpcServer)
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
