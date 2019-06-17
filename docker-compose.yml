@@ -1,0 +1,12 @@
+version: '3'
+services:
+  ratio:
+    build:
+      context: .
+    ports:
+      - "50051:50051"
+  redis:
+    image: redis:5.0-alpine
+    ports:
+      - "6379:6379"
+    restart: always
