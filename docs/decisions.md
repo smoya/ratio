@@ -127,3 +127,12 @@ The idea behind this alternative would be storing number of tokens and a timesta
   - Still no slide window based.
 
 I discarded this algorithm specially because of the cons.
+
+## Links of inspiration
+
+- https://github.com/oklog/oklog/blob/master/DESIGN.md
+- https://medium.com/smyte/rate-limiter-df3408325846
+- https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/
+- https://github.com/lyft/ratelimit
+- http://arodland.github.io/smockron/
+- https://konghq.com/blog/how-to-design-a-scalable-rate-limiting-algorithm/
