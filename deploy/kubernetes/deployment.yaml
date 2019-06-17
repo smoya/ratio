@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ratio
+  name: ratio
+spec:
+  selector:
+    matchLabels:
+      app: ratio
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ratio
+    spec:
+      containers:
+        - name: ratio
+          image: github.com/smoya/ratio:latest
+          env:
+            - name: RATIO_STORAGE
+              value: "inmemory://" # if you have redis, change it by redis://<host>:<port>/<db>
+            - name: RATIO_PORT
+              value: "50051"
+          ports:
+            - name: grpc
+              containerPort: 50051
