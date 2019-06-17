@@ -82,10 +82,13 @@ You can find an example at [/docs/](/docs/README.md#grpc-command-line-test-clien
 
 ## TODO
 
-* Support for Redis Cluster. Read the reasons behind [here](/docs/decisions.md#storage)
-* Support for distributed in memory storage, with autodiscovery of `ratio` instances and broadcast between them.
-* Instrument the server with a Prometheus endpoint exposing basic metrics.
-* Add benchmarks. 
+- Support for Redis Cluster. Read the reasons behind [here](/docs/decisions.md#storage)
+- Support for distributed in memory storage, with autodiscovery of `ratio` instances and broadcast between them.
+- Instrument the server with a Prometheus endpoint exposing basic metrics.
+- Add benchmarks. 
+- Improve the K8s deploy adding different use cases:
+    - More than one instance behind a Load Balancer.
+    - Provide helm chart.
 
 ## License
 
