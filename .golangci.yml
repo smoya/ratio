@@ -1,0 +1,18 @@
+linters:
+  enable:
+    - govet
+    - golint
+    - goimports
+    - unused
+    - goconst
+    - errcheck
+  enable-all: false
+  disable-all: true
+  fast: false
+
+linters-settings:
+  golint:
+    min-confidence: 0.3
+
+issues:
+  exclude-use-default: false
