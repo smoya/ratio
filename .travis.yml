@@ -2,6 +2,9 @@ language: go
 sudo: required
 dist: xenial
 
+services:
+  - docker
+
 go:
   - 1.12.x
 
@@ -30,6 +33,12 @@ jobs:
 branches:
   only:
     - master
+
+deploy:
+  - provider: script
+    script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && make docker
+    on:
+      branch: master
 
 notifications:
   email: false
