@@ -2,23 +2,32 @@
 
 Find here a list of thoughts and decisions I made during the development of `ratio`.
 
+## Architecture
+
+The idea behind `ratio` is provide a simple 
+
+
 ## Good practices
+
 - This projects follows the https://github.com/golang-standards/project-layout Go project layout.
   - I've been using it for a while. The layout gets easy to understand and it seems to be pretty accepted by the community.
 - [Golang-ci](https://github.com/golangci/golangci-lint) is the preferred tool for running code linters.
 
 ## Deployment
+
 This service is agnostic and it does not depends on any particular cloud provider or orchestration framework. However, 
 as a facilitator, I chose Kubernetes for demo purposes. The config files for deploying it insight any cluster 
 can be found in this repository.
 
 ## Communication
+
 I decided to use gRPC. Some of the reasons behind are:
 - It uses protocol buffers for both service declaration and data serialization. It gives a really good performance at
   serialize/deserialize and also a portable service schema definition, which can be used even for auto generate code.
 - built on top of [HTTP/2](https://medium.com/@factoryhr/http-2-the-difference-between-http-1-1-benefits-and-how-to-use-it-38094fa0e95b).
   
 ## Storage
+
 I choice a combination of local memory and Redis. The goal would be achieving a system that ensures 
 the **AP** from the [CAP Theorem](https://en.wikipedia.org/wiki/CAP_theorem). We want a High Available service, and 
 in second position a Partition Tolerant one. We do not really care about consistency if we can ensure the first two. 
@@ -39,12 +48,14 @@ in second position a Partition Tolerant one. We do not really care about consist
   - The hit wil not be directly persisted in Redis but eventually. The client should not wait such write.
 
 ## Rate limit algorithm
+
 The chosen algorithm for calculating the rate limit is "Slide window of timestamps" (this is how I called).
 Please see more details in the [algorithm](README.md#algorithm) section of the docs readme.  
   
 # Discarded ideas
 
 ### Architecture
+
 - In order to distribute the hits avoiding the needs for a single datastore, I though about adding a proxy in front of
   the services fleet in order to shard the calls, so each service instance will just keep a local in memory database as 
   all the hits for a given source will be always hitting the same instance. Two problems related:
@@ -59,6 +70,7 @@ Please see more details in the [algorithm](README.md#algorithm) section of the d
 ### Rate limit algorithm
 
 #### Token bucket
+
 At a first glance, the [Token bucket](https://en.wikipedia.org/wiki/Token_bucket), AKA [Leaky bucket as a meter](https://en.wikipedia.org/wiki/Leaky_bucket#As_a_meter), seems to be the most used algorithm 
 in rate limit services. Here a brief explanation about the algorithm applied to our rate limit service:
 
@@ -84,6 +96,7 @@ in rate limit services. Here a brief explanation about the algorithm applied to 
 I discarded this algorithm specially because of the second cons.
 
 #### Token bucket + storing timestamp
+
 The idea behind this alternative would be storing number of tokens and a timestamp of the last refill operation:
 
 - When a hit is received, we fetch such timestamp in order to calculate the number of tokens that, in theory, has 
