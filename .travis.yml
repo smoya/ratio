@@ -1,0 +1,35 @@
+language: go
+sudo: required
+dist: xenial
+
+go:
+  - 1.12.x
+
+env:
+  global:
+    - GO111MODULE=on
+
+install: true
+
+cache:
+  directories:
+    - $GOPATH/pkg/mod
+
+jobs:
+  include:
+    - stage: test
+      name: "Lint"
+      script: make lint
+    - name: "Unit tests"
+      script: make test
+    - stage: build
+      name: "Build"
+      script: make build
+
+# safelist
+branches:
+  only:
+    - master
+
+notifications:
+  email: false
