@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-redis/redis"
-
 	"github.com/smoya/ratio/pkg/rate"
 
 	"github.com/kelseyhightower/envconfig"
@@ -26,7 +24,7 @@ import (
 type config struct {
 	Port              int           `default:"50051"`
 	ConnectionTimeout time.Duration `default:"1s" help:"Timeout for all incoming connections" split_words:"true"`
-	RedisAddr         string        `default:"redis:6379"`
+	Storage           string        `default:"redis://redis:6379/0"`
 }
 
 func main() {
@@ -43,17 +41,14 @@ func main() {
 	s := grpc.NewServer(grpc.ConnectionTimeout(c.ConnectionTimeout))
 	reflection.Register(s)
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     c.RedisAddr,
-		Password: "", // TODO Make it configurable.
-		DB:       0,
-	})
-
-	redisStorage := rate.NewRedisSlideWindowStorage(redisClient)
+	storage, err := rate.NewSlideWindowStorageFromDSN(c.Storage)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	grpcServer := server.NewGRPC(
 		rate.NewLimit(time.Minute, 5),
-		rate.SlideWindowRateLimiter(redisStorage, true),
+		rate.SlideWindowRateLimiter(storage, true),
 	)
 
 	ratio.RegisterRateLimitServiceServer(s, grpcServer)
