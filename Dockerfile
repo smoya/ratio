@@ -6,7 +6,7 @@ ENV GO111MODULE on
 # Add dependencies first to make use of docker cache
 COPY go.mod .
 COPY go.sum .
-RUN go get ./...
+RUN go mod download
 
 COPY . .
 RUN make build
