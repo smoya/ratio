@@ -1,6 +1,6 @@
 # ratio : A simple distributed rate limiter made in go
 
-## Overview [![Go Report Card](https://goreportcard.com/badge/github.com/smoya/ratio)](https://goreportcard.com/report/github.com/smoya/ratio)
+## Overview [![Build Status](https://travis-ci.org/smoya/ratio.svg?branch=master)](https://travis-ci.org/smoya/ratio) [![Go Report Card](https://goreportcard.com/badge/github.com/smoya/ratio)](https://goreportcard.com/report/github.com/smoya/ratio)
 
 Ratio is a distributed rate limiter designed for being used by any of your webservices.
 
