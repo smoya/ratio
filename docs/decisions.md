@@ -5,6 +5,10 @@ Find here a list of thoughts and decisions I made during the development of `rat
 ## Architecture
 
 The idea behind `ratio` is to provide a basic service for rate limiting web requests. 
+It has been designed as a simple service. It will receive calls from different webservices.
+
+However, if those webservices want to avoid traffic coming to them, It would make more sense to put the rate limiter 
+as a proxy in front of them, so traffic never reaches those webservices in case the limit applies.
 
 ## Good practices
 
@@ -45,7 +49,7 @@ in second position a Partition Tolerant one. We do not really care about consist
     > because the cache will not contain a copy of the whole database but just a list of most recently used. Otherwise each service
     > instance will require a potentially big a mount of memory (at least the same as Redis). 
   - The hit wil not be directly persisted in Redis but eventually. The client should not wait such write.
-
+  
 ## Rate limit algorithm
 
 The chosen algorithm for calculating the rate limit is "Slide window of timestamps" (this is how I called).
@@ -65,6 +69,21 @@ Please see more details in the [algorithm](README.md#algorithm) section of the d
     3. The proxy could become a single point of failure.
 - In addition to the previous point, I also considered using sticky sessions as alternative to the sharding, but the 
   problems are very similar.
+
+### Storage
+
+#### Distributed in memory
+
+Even though a distributed in memory storage will end having a really low latency, I decided to drop that idea because 
+the amount of needed memory would be high if there is no sharding mechanism put in place. 
+Another part to be added is the autodiscovery and distribution. I could think on Serf as helper, but anyway its not trivial.
+
+As a first iteration, I decided to look for a simplest solution.
+
+#### Local cache
+
+Having a cache in front of the up to date will probably lead to an eventual saturation of the storage. 
+I discarded such idea, considering the fact that having a literal copy of the persistent storage on each service instance is not viable. 
 
 ### Rate limit algorithm
 
