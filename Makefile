@@ -19,3 +19,7 @@ lint: $(BIN_DIR)/golangci-lint
 .PHONY: build
 build:
 	go build -o bin/ratio cmd/server/main.go
+
+docker:
+	docker build -t smoya/ratio .
+	docker push smoya/ratio
