@@ -49,9 +49,11 @@ func main() {
 		DB:       0,
 	})
 
+	redisStorage := rate.NewRedisSlideWindowStorage(redisClient)
+
 	grpcServer := server.NewGRPC(
 		rate.NewLimit(time.Minute, 5),
-		rate.RedisSlideWindowRateLimiter(redisClient, true),
+		rate.SlideWindowRateLimiter(redisStorage, true),
 	)
 
 	ratio.RegisterRateLimitServiceServer(s, grpcServer)
