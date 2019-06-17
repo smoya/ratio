@@ -22,9 +22,9 @@ import (
 )
 
 type config struct {
-	Port              int           `default:"50051"`
+	Port              int           `default:"50051" help:"GRPC Port"`
 	ConnectionTimeout time.Duration `default:"1s" help:"Timeout for all incoming connections" split_words:"true"`
-	Storage           string        `default:"redis://redis:6379/0"`
+	Storage           string        `default:"redis://redis:6379/0" help:"DSN Storage. Example: inmemory://"`
 }
 
 func main() {
