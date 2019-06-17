@@ -78,15 +78,14 @@ go generate ./...
 In case you want to do some calls to the server, you can install the `grpc_cli` tool from 
 [here](https://github.com/grpc/grpc/blob/master/doc/command_line_tool.md). 
 
-Example:
+You can find an example at [/docs/](/docs/README.md#grpc-command-line-test-client)
 
-```bash
-grpc_cli call localhost:50051 RateLimit "owner: 'my-awesome-service', resource: '/v1/user/register'"
-```
+## TODO
 
-## Contributing
-
-TODO
+* Support for Redis Cluster. Read the reasons behind [here](/docs/decisions.md#storage)
+* Support for distributed in memory storage, with autodiscovery of `ratio` instances and broadcast between them.
+* Instrument the server with a Prometheus endpoint exposing basic metrics.
+* Add benchmarks. 
 
 ## License
 

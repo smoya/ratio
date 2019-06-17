@@ -1,10 +1,11 @@
 # Decisions
 
-Find here a list of thoughts and decisions I made during the development of the first version.
+Find here a list of thoughts and decisions I made during the development of `ratio`.
 
 ## Good practices
 - This projects follows the https://github.com/golang-standards/project-layout Go project layout.
   - I've been using it for a while. The layout gets easy to understand and it seems to be pretty accepted by the community.
+- [Golang-ci](https://github.com/golangci/golangci-lint) is the preferred tool for running code linters.
 
 ## Deployment
 This service is agnostic and it does not depends on any particular cloud provider or orchestration framework. However, 
