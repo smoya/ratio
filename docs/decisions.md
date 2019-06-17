@@ -6,7 +6,6 @@ Find here a list of thoughts and decisions I made during the development of `rat
 
 The idea behind `ratio` is provide a simple 
 
-
 ## Good practices
 
 - This projects follows the https://github.com/golang-standards/project-layout Go project layout.

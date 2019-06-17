@@ -51,6 +51,7 @@ grpc_cli call localhost:50051 RateLimit "owner: 'my-awesome-service', resource: 
 - `RATIO_PORT`: The GRPC port. Default `50051`.
 - `RATIO_CONNECTION_TIMEOUT`: Timeout for all incoming connections. Default `1s`.
 - `RATIO_STORAGE`: DSN Storage. Example: `inmemory://`. Default: `redis://redis:6379/0`.
+- `RATIO_LIMIT`: The rate limit. Example: `2400/day`, `100/hour`, `2/minute`.
 
 ## Storage
 

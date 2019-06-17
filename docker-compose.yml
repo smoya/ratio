@@ -3,6 +3,9 @@ services:
   ratio:
     build:
       context: .
+    environment:
+      - RATIO_STORAGE=redis://redis:6379/0
+      - RATIO_LIMIT=100/h
     ports:
       - "50051:50051"
   redis:
