@@ -1,9 +1,7 @@
 package rate
 
 import (
-	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -16,51 +14,57 @@ type Rediser interface {
 	ZCount(key, min, max string) *redis.IntCmd
 	ZAdd(key string, members ...redis.Z) *redis.IntCmd
 	Expire(key string, expiration time.Duration) *redis.BoolCmd
+	FlushAll() *redis.StatusCmd
 }
 
-// RedisSlideWindowRateLimiter implements Slide Window algorithm using redis as store.
-func RedisSlideWindowRateLimiter(r Rediser, async bool) Limiter {
-	return func(l Limit, owner, resource string) (bool, error) {
-		now := int(time.Now().UnixNano() / 1000000)
-		windowStartedAtStr := strconv.Itoa(int(time.Now().Add(-l.Unit).UnixNano() / 1000000))
-
-		key := fmt.Sprintf("%s-%s", owner, resource) // TODO COMPRESS?
-
-		// Note: We do not run the following using MULTI nor via LUA scripting since we do not want to block other operations.
-
-		// 1. ZREMRANGEBYSCORE removing hits that happen before the current time window.
-		err := r.ZRemRangeByScore(key, "-inf", fmt.Sprintf("(%s", windowStartedAtStr)).Err()
-		if err != nil && err != redis.Nil {
-			log.Println("error during redis ZREMRANGEBYSCORE command")
-		}
-
-		// 2. ZCOUNT since the beginning of the windows until now
-		hits, err := r.ZCount(key, windowStartedAtStr, fmt.Sprintf("(%d", now)).Result()
-		if err != nil && err != redis.Nil {
-			return false, errors.New("getting hits count")
-		}
-
-		if async {
-			// Asynchronously, we do not want the caller to wait as ratio is eventually consistent.
-			go appendHit(r, l, key, now)
-		} else {
-			appendHit(r, l, key, now)
-		}
-
-		return int(hits) < l.Quantity, nil
-	}
+type redisSlideWindowStorage struct {
+	r Rediser
 }
 
-func appendHit(r Rediser, l Limit, key string, now int) {
-	// 1. ZADD
-	err := r.ZAdd(key, redis.Z{Score: float64(now), Member: now}).Err()
+// NewRedisSlideWindowStorage creates a new Redis SlideWindowStorage.
+func NewRedisSlideWindowStorage(r Rediser) SlideWindowStorage {
+	return &redisSlideWindowStorage{r: r}
+}
+
+func (s redisSlideWindowStorage) Add(key string, now time.Time, expireIn time.Duration) error {
+	nowMs := s.toMilliseconds(now)
+	err := s.r.ZAdd(key, redis.Z{Score: float64(nowMs), Member: nowMs}).Err()
 	if err != nil {
-		log.Println("error during redis ZADD command")
+		return err
 	}
 
-	// 2. Set TTL
-	err = r.Expire(key, l.Unit).Err()
-	if err != nil {
-		log.Println("error during redis EXPIRE command")
+	if expireIn > 0 {
+		err = s.r.Expire(key, expireIn).Err()
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func (s redisSlideWindowStorage) Drop(key string, until time.Time) (int, error) {
+	hits, err := s.r.ZRemRangeByScore(key, "-inf", fmt.Sprintf("(%s", strconv.Itoa(s.toMilliseconds(until)))).Result()
+	if err != nil && err != redis.Nil {
+		return 0, err
+	}
+
+	return int(hits), nil
+}
+
+func (s redisSlideWindowStorage) Count(key string, until time.Time) (int, error) {
+	hits, err := s.r.ZCount(key, "-inf", fmt.Sprintf("%d", s.toMilliseconds(until))).Result()
+	if err != nil && err != redis.Nil {
+		return 0, err
+	}
+
+	return int(hits), nil
+}
+
+func (s redisSlideWindowStorage) Flush() error {
+	return s.r.FlushAll().Err()
+}
+
+func (s redisSlideWindowStorage) toMilliseconds(t time.Time) int {
+	return int(t.UnixNano() / 1000000)
 }

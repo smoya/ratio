@@ -1,6 +1,8 @@
 package rate
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -9,11 +11,86 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRedisSlideWindowRateLimiter(t *testing.T) {
+func TestRedisSlideWindowStorage_Add(t *testing.T) {
+	r, m := createRedis()
+	defer m.Close()
+	defer m.FlushAll()
+
+	store := NewRedisSlideWindowStorage(r)
+	now := time.Now()
+
+	assert.NoError(t, store.Add("key1", now, 0))
+	hits, err := r.ZRange("key1", 0, -1).Result()
+
+	assert.NoError(t, err)
+	assert.Len(t, hits, 1)
+	assert.Equal(t, fmt.Sprintf("%d", now.UnixNano()/1000000), hits[0])
+}
+
+func TestRedisSlideWindowStorage_Count(t *testing.T) {
+	r, m := createRedis()
+	defer m.Close()
+	defer m.FlushAll()
+
+	store := NewRedisSlideWindowStorage(r)
+	now := time.Now()
+
+	assert.NoError(t, store.Add("key1", now, 0))
+	assert.NoError(t, store.Add("key1", now.Add(-time.Minute), 0))
+	assert.NoError(t, store.Add("key1", now.Add(-time.Minute*2), 0))
+
+	c, err := store.Drop("key1", now.Add(-time.Minute))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, c)
+}
+
+func TestRedisSlideWindowStorage_Drop(t *testing.T) {
+	r, m := createRedis()
+	defer m.Close()
+	defer m.FlushAll()
+
+	store := NewRedisSlideWindowStorage(r)
+	now := time.Now()
+
+	assert.NoError(t, store.Add("key1", now, 0))
+	assert.NoError(t, store.Add("key1", now.Add(-time.Minute), 0))
+	assert.NoError(t, store.Add("key1", now.Add(-time.Minute*2), 0))
+
+	c, err := store.Drop("key1", now.Add(-time.Minute))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, c)
+
+	hits, err := r.ZRevRange("key1", 0, -1).Result()
+	assert.NoError(t, err)
+
+	assert.Equal(t, []string{
+		strconv.Itoa(int(now.UnixNano() / 1000000)),
+		strconv.Itoa(int(now.Add(-time.Minute).UnixNano() / 1000000)),
+	}, hits)
+}
+
+func TestRedisSlideWindowStorage_Flush(t *testing.T) {
+	r, m := createRedis()
+	defer m.Close()
+	defer m.FlushAll()
+
+	store := NewRedisSlideWindowStorage(r)
+	now := time.Now()
+
+	assert.NoError(t, store.Add("key1", now, 0))
+	assert.NoError(t, store.Flush())
+
+	hits, err := r.ZCount("key1", "-inf", "inf").Result()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), hits)
+}
+
+func TestSlideWindowLimiter_RedisStorage(t *testing.T) {
 	r, m := createRedis()
 	defer m.Close()
 
-	limiter := RedisSlideWindowRateLimiter(r, false)
+	s := redisSlideWindowStorage{r}
+	limiter := SlideWindowRateLimiter(s, false)
 
 	cases := []struct {
 		desc         string
@@ -84,7 +161,7 @@ func TestRedisSlideWindowRateLimiter(t *testing.T) {
 
 			ok, err := limiter(c.limit, c.owner, c.resource)
 			assert.NoError(t, err)
-			assert.Equal(t, ok, c.ok)
+			assert.Equal(t, c.ok, ok)
 
 			r.FlushAll()
 		})

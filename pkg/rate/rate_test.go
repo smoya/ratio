@@ -7,11 +7,56 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFoo(t *testing.T) {
-	assert.Equal(t, "foo", time.Now().Truncate(time.Hour).String())
+func TestInMemorySlideWindowStorage_Add(t *testing.T) {
+	s := make(map[string][]time.Time)
+	store := NewInMemorySlideWindowStorage(s)
+
+	now := time.Now()
+	assert.NoError(t, store.Add("key1", now, 0))
+
+	assert.Len(t, s["key1"], 1)
+	assert.Equal(t, now, s["key1"][0])
 }
 
-func TestInMemorySlideWindowRateLimiter(t *testing.T) {
+func TestInMemorySlideWindowStorage_Count(t *testing.T) {
+	s := make(map[string][]time.Time)
+	store := NewInMemorySlideWindowStorage(s)
+
+	now := time.Now()
+	assert.NoError(t, store.Add("key1", now, 0))
+
+	c, err := store.Count("key1", now)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, c)
+}
+
+func TestInMemorySlideWindowStorage_Drop(t *testing.T) {
+	s := make(map[string][]time.Time)
+	store := NewInMemorySlideWindowStorage(s)
+
+	now := time.Now()
+	assert.NoError(t, store.Add("key1", now, 0))
+	assert.NoError(t, store.Add("key1", now.Add(-time.Minute), 0))
+	assert.NoError(t, store.Add("key1", now.Add(-time.Minute*2), 0))
+
+	c, err := store.Drop("key1", now.Add(-time.Minute))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, c)
+
+	assert.Len(t, s["key1"], 2)
+	assert.Equal(t, []time.Time{now, now.Add(-time.Minute)}, s["key1"])
+}
+
+func TestInMemorySlideWindowStorage_Flush(t *testing.T) {
+	store := NewInMemorySlideWindowStorage(inMemoryStore())
+	assert.NoError(t, store.Flush())
+	assert.Empty(t, store.(*inMemorySlideWindowStorage).store)
+}
+
+func TestSlideWindowLimiter_InMemoryStorage(t *testing.T) {
+	store := NewInMemorySlideWindowStorage(inMemoryStore())
+	limiter := SlideWindowRateLimiter(store, false)
+
 	cases := []struct {
 		desc     string
 		limit    Limit
@@ -51,16 +96,18 @@ func TestInMemorySlideWindowRateLimiter(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
-			ok, err := InMemorySlideWindowRateLimiter(inMemoryStore(), false)(c.limit, c.owner, c.resource)
+			ok, err := limiter(c.limit, c.owner, c.resource)
 			assert.NoError(t, err)
-			assert.Equal(t, ok, c.ok)
+			assert.Equal(t, c.ok, ok)
+			assert.NoError(t, store.Flush())
+			store.(*inMemorySlideWindowStorage).store = inMemoryStore()
 		})
 	}
 }
 
 func inMemoryStore() map[string][]time.Time {
 	return map[string][]time.Time{
-		"myservice_resource1": {
+		"myservice-resource1": {
 			time.Now().Add(-time.Hour * 2),
 			time.Now().Add(-time.Minute * 45),
 			time.Now().Add(-time.Minute * 30),
