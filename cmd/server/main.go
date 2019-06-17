@@ -26,6 +26,7 @@ import (
 type config struct {
 	Port              int           `default:"50051"`
 	ConnectionTimeout time.Duration `default:"1s" help:"Timeout for all incoming connections" split_words:"true"`
+	RedisAddr         string        `default:"redis:6379"`
 }
 
 func main() {
@@ -42,10 +43,9 @@ func main() {
 	s := grpc.NewServer(grpc.ConnectionTimeout(c.ConnectionTimeout))
 	reflection.Register(s)
 
-	// TODO Make it configurable.
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
+		Addr:     c.RedisAddr,
+		Password: "", // TODO Make it configurable.
 		DB:       0,
 	})
 
