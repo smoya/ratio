@@ -22,6 +22,8 @@ spec:
               value: "inmemory://" # if you have redis, change it by redis://<host>:<port>/<db>
             - name: RATIO_PORT
               value: "50051"
+            - name: RATIO_LIMIT
+              value: "100/h"
           ports:
             - name: grpc
               containerPort: 50051

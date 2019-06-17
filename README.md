@@ -14,7 +14,7 @@ It has been designed based on the following goals:
 
 ### Docker
 
-A part from the `Dockerfile`, this project also includes a `docker-compose.yaml` in order to spin up a basic set of 
+A part from the `Dockerfile`, this project also includes a `docker-compose.yml` in order to spin up a basic set of 
 `ratio` + `redis` as storage.
 
 ```bash
@@ -22,6 +22,7 @@ docker-compose up
 ```
 
 The GRPC server will be up and running, accessible via `localhost:50051`.
+The default limit is `100/h`, but you can change it directly in the `docker-compose.yml` file.
 
 ### Kubernetes
 
@@ -31,6 +32,8 @@ kubectl apply -f deploy/kubernetes
 
 It will create a service with only one instance. Please modify the files in [deploy/kubernetes](deploy/kubernetes) 
 accordingly with your needs.
+
+The default limit is `100/h`, but you can change it directly in the `deployment.yaml` file.
 
 > Note: For simplification, the ratio is deployed with the `inmemory` slide window storage. We encourage to deploy it 
 > with Redis as Storage, as the `inmemory` is not meant to be used in production.
@@ -89,6 +92,7 @@ You can find an example at [/docs/](/docs/README.md#grpc-command-line-test-clien
 - Improve the K8s deploy adding different use cases:
     - More than one instance behind a Load Balancer.
     - Provide helm chart.
+- Allow the caller to configure its own Limits. 
 
 ## License
 

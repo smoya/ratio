@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/smoya/ratio/pkg/rate"
 
@@ -18,7 +17,7 @@ func noopLimiter(_ rate.Limit, _, _ string) (bool, error) {
 
 func TestGRPC_RateLimit(t *testing.T) {
 
-	s := NewGRPC(rate.NewLimit(time.Minute, 5), noopLimiter)
+	s := NewGRPC(rate.NewLimit(rate.PerMinute, 5), noopLimiter)
 	r := ratio.RateLimitRequest{}
 	resp, err := s.RateLimit(context.TODO(), &r)
 

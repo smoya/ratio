@@ -25,6 +25,7 @@ type config struct {
 	Port              int           `default:"50051" help:"GRPC Port"`
 	ConnectionTimeout time.Duration `default:"1s" help:"Timeout for all incoming connections" split_words:"true"`
 	Storage           string        `default:"redis://redis:6379/0" help:"DSN Storage. Example: inmemory://"`
+	Limit             string        `default:"100/m"`
 }
 
 func main() {
@@ -46,8 +47,12 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	limit, err := rate.ParseLimit(c.Limit)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	grpcServer := server.NewGRPC(
-		rate.NewLimit(time.Minute, 5),
+		limit,
 		rate.SlideWindowRateLimiter(storage, true),
 	)
 

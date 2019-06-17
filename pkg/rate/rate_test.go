@@ -7,6 +7,63 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParseFrequency(t *testing.T) {
+	cases := []struct {
+		string      string
+		frequency   Frequency
+		shouldError bool
+	}{
+		{string: "day", frequency: PerDay},
+		{string: "d", frequency: PerDay},
+		{string: "DAY", frequency: PerDay},
+		{string: "minute", frequency: PerMinute},
+		{string: "m", frequency: PerMinute},
+		{string: "MINUTE", frequency: PerMinute},
+		{string: "hour", frequency: PerHour},
+		{string: "h", frequency: PerHour},
+		{string: "HOUR", frequency: PerHour},
+
+		{string: "WEEK", shouldError: true},
+		{string: "YEAR", shouldError: true},
+		{string: "", shouldError: true},
+	}
+
+	for _, c := range cases {
+		f, err := ParseFrequency(c.string)
+		if c.shouldError {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+
+		assert.Equal(t, c.frequency, f)
+	}
+}
+
+func TestParseLimit(t *testing.T) {
+	cases := []struct {
+		string      string
+		limit       Limit
+		shouldError bool
+	}{
+		{string: "100/day", limit: NewLimit(PerDay, 100)},
+		{string: "50/h", limit: NewLimit(PerHour, 50)},
+		{string: "2/MINUTE", limit: NewLimit(PerMinute, 2)},
+		{string: "1/WEEK", shouldError: true},
+	}
+
+	for _, c := range cases {
+		l, err := ParseLimit(c.string)
+		if c.shouldError {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+
+		assert.Equal(t, c.limit, l)
+	}
+}
+
 func TestInMemorySlideWindowStorage_Add(t *testing.T) {
 	s := make(map[string][]time.Time)
 	store := NewInMemorySlideWindowStorage(s)
@@ -66,28 +123,28 @@ func TestSlideWindowLimiter_InMemoryStorage(t *testing.T) {
 	}{
 		{
 			desc:     "Limit 4/h. 3 hits found for 1h window. 1 more is allowed.",
-			limit:    NewLimit(time.Hour, 4),
+			limit:    NewLimit(PerHour, 4),
 			owner:    "myservice",
 			resource: "resource1",
 			ok:       true,
 		},
 		{
 			desc:     "Limit 3/h. 3 hits found for 1h window. 1 more is NOT allowed.",
-			limit:    NewLimit(time.Hour, 3),
+			limit:    NewLimit(PerHour, 3),
 			owner:    "myservice",
 			resource: "resource1",
 			ok:       false,
 		},
 		{
 			desc:     "Limit 2/m. 1 hit found for 1m window. 1 more is allowed.",
-			limit:    NewLimit(time.Minute, 2),
+			limit:    NewLimit(PerMinute, 2),
 			owner:    "myservice",
 			resource: "resource1",
 			ok:       true,
 		},
 		{
 			desc:     "Limit 1/m. 1 hit found for 1m window. 1 more is NOT allowed.",
-			limit:    NewLimit(time.Minute, 1),
+			limit:    NewLimit(PerMinute, 1),
 			owner:    "myservice",
 			resource: "resource1",
 			ok:       false,

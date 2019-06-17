@@ -103,7 +103,7 @@ func TestSlideWindowLimiter_RedisStorage(t *testing.T) {
 	}{
 		{
 			desc:         "Limit 4/h. 3 hits found in 1h window. 1 more is allowed.",
-			limit:        NewLimit(time.Hour, 4),
+			limit:        NewLimit(PerHour, 4),
 			owner:        "myservice",
 			resource:     "resource1",
 			previousHits: 3,
@@ -111,7 +111,7 @@ func TestSlideWindowLimiter_RedisStorage(t *testing.T) {
 		},
 		{
 			desc:         "Limit 3/h. 3 hits found in 1h window. 1 more is NOT allowed.",
-			limit:        NewLimit(time.Hour, 3),
+			limit:        NewLimit(PerHour, 3),
 			owner:        "myservice",
 			resource:     "resource1",
 			previousHits: 3,
@@ -119,7 +119,7 @@ func TestSlideWindowLimiter_RedisStorage(t *testing.T) {
 		},
 		{
 			desc:         "Limit 2/m. 1 hit found in 1m window. 1 more is allowed.",
-			limit:        NewLimit(time.Minute, 2),
+			limit:        NewLimit(PerMinute, 2),
 			owner:        "myservice",
 			resource:     "resource1",
 			previousHits: 1,
@@ -127,7 +127,7 @@ func TestSlideWindowLimiter_RedisStorage(t *testing.T) {
 		},
 		{
 			desc:         "Limit 1/m. 1 hit found in 1m window. 1 more is NOT allowed.",
-			limit:        NewLimit(time.Minute, 1),
+			limit:        NewLimit(PerMinute, 1),
 			owner:        "myservice",
 			resource:     "resource1",
 			previousHits: 1,
@@ -135,7 +135,7 @@ func TestSlideWindowLimiter_RedisStorage(t *testing.T) {
 		},
 		{
 			desc:         "Limit 1/m. 1 hit found in 1m window. 1 more is allowed AFTER 1 min.",
-			limit:        NewLimit(time.Minute, 1),
+			limit:        NewLimit(PerMinute, 1),
 			owner:        "myservice",
 			resource:     "resource1",
 			previousHits: 1,
