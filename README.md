@@ -83,6 +83,52 @@ In case you want to do some calls to the server, you can install the `grpc_cli` 
 
 You can find an example at [/docs/](/docs/README.md#grpc-command-line-test-client)
 
+## Load Testing
+
+```
+Summary:
+  Count:        200
+  Total:        398.93 ms
+  Slowest:      152.28 ms
+  Fastest:      16.55 ms
+  Average:      72.22 ms
+  Requests/sec: 501.35
+
+Response time histogram:
+  16.551 [1]    |∎
+  30.124 [31]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  43.696 [21]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  57.269 [16]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  70.842 [25]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  84.415 [31]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  97.988 [23]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  111.561 [27]  |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  125.134 [13]  |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  138.707 [11]  |∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  152.280 [1]   |∎
+
+Latency distribution:
+  10% in 24.72 ms
+  25% in 42.33 ms
+  50% in 73.22 ms
+  75% in 99.50 ms
+  90% in 119.49 ms
+  95% in 130.95 ms
+  99% in 136.96 ms
+
+Status code distribution:
+  [OK]   200 responses
+
+```
+
+[ghz](https://ghz.sh) is a very useful load testing tool for GRPC.
+
+Run:
+
+```bash
+ghz --config .ghz.json
+```
+
 ## TODO
 
 - Support for Redis Cluster. Read the reasons behind [here](/docs/decisions.md#storage)

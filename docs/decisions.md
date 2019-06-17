@@ -4,7 +4,7 @@ Find here a list of thoughts and decisions I made during the development of `rat
 
 ## Architecture
 
-The idea behind `ratio` is provide a simple 
+The idea behind `ratio` is to provide a basic service for rate limiting web requests. 
 
 ## Good practices
 
