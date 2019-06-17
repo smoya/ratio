@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-redis/redis"
+
 	"github.com/smoya/ratio/pkg/rate"
 
 	"github.com/kelseyhightower/envconfig"
@@ -40,9 +42,16 @@ func main() {
 	s := grpc.NewServer(grpc.ConnectionTimeout(c.ConnectionTimeout))
 	reflection.Register(s)
 
+	// TODO Make it configurable.
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
 	grpcServer := server.NewGRPC(
 		rate.NewLimit(time.Minute, 5),
-		rate.InMemorySlideWindowRateLimiter(make(map[string][]time.Time), false),
+		rate.RedisSlideWindowRateLimiter(redisClient, true),
 	)
 
 	ratio.RegisterRateLimitServiceServer(s, grpcServer)
