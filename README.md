@@ -22,7 +22,7 @@ docker-compose up
 ```
 
 The GRPC server will be up and running, accessible via `localhost:50051`.
-The default limit is `100/h`, but you can change it directly in the `docker-compose.yml` file.
+The default limit is `100/m`, but you can change it directly in the `docker-compose.yml` file.
 
 ### Kubernetes
 
@@ -33,7 +33,7 @@ kubectl apply -f deploy/kubernetes
 It will create a service with only one instance. Please modify the files in [deploy/kubernetes](deploy/kubernetes) 
 accordingly with your needs.
 
-The default limit is `100/h`, but you can change it directly in the `deployment.yaml` file.
+The default limit is `100/m`, but you can change it directly in the `deployment.yaml` file.
 
 > Note: For simplification, the ratio is deployed with the `inmemory` slide window storage. We encourage to deploy it 
 > with Redis as Storage, as the `inmemory` is not meant to be used in production.

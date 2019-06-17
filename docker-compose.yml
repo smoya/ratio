@@ -5,7 +5,7 @@ services:
       context: .
     environment:
       - RATIO_STORAGE=redis://redis:6379/0
-      - RATIO_LIMIT=100/h
+      - RATIO_LIMIT=100/m
     ports:
       - "50051:50051"
   redis:

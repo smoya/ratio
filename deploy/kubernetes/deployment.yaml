@@ -23,7 +23,7 @@ spec:
             - name: RATIO_PORT
               value: "50051"
             - name: RATIO_LIMIT
-              value: "100/h"
+              value: "100/m"
           ports:
             - name: grpc
               containerPort: 50051
