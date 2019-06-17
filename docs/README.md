@@ -53,25 +53,25 @@ grpc_cli call localhost:50051 RateLimit "owner: 'my-awesome-service', resource: 
 - `RATIO_STORAGE`: DSN Storage. Example: `inmemory://`. Default: `redis://redis:6379/0`.
 - `RATIO_LIMIT`: The rate limit. Example: `2400/day`, `100/hour`, `2/minute`.
 
-## Storage
+### Storage
 
 `ratio` storage is configurable via the `RATIO_STORAGE` env var. Its value should be a `DSN` related to the storage you
 want to use. e.g. `redis://localhost:6379/0`.
 
-### In memory
+#### In memory
 
 The In memory implementation that you can find in `ratio` is not meant to be used in production. Is a non concurrency-safe 
 storage for testing purpose.
 A good in memory implementation could be https://github.com/patrickmn/go-cache, however a distributed in memory database 
 will lead in to a better final storage.   
 
-### Redis
+#### Redis
 
 `ratio` preferred storage is [Redis](https://redis.io/).
 Please read why we chose Redis as preferred storage in the [Decisions and thoughts](decisions.md#storage) doc.
 Read more details about the implementation [here](#redis-implementation).
 
-### Your own storage
+#### Your own storage
 
 `ratio` library allows to quickly implement your own storage thanks to its design based on Interface Segregation.
 Take a look to the `SlideWindowStorage` interface located in the [rate](/pkg/rate/storage.go) package:
