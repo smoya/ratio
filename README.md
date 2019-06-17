@@ -14,15 +14,38 @@ It has been designed based on the following goals:
 
 ### Docker
 
-TODO
+A part from the `Dockerfile`, this project also includes a `docker-compose.yaml` in order to spin up a basic set of 
+`ratio` + `redis` as storage.
+
+```bash
+docker-compose up
+```
+
+The GRPC server will be up and running, accessible via `localhost:50051`.
 
 ### Kubernetes
 
-TODO
+```bash
+kubectl apply -f deploy/kubernetes
+```
 
-## Usage
+It will create a service with only one instance. Please modify the files in [deploy/kubernetes](deploy/kubernetes) 
+accordingly with your needs.
 
-TODO
+> Note: For simplification, the ratio is deployed with the `inmemory` slide window storage. We encourage to deploy it 
+> with Redis as Storage, as the `inmemory` is not meant to be used in production.
+
+#### Development
+
+[Skaffold](https://github.com/GoogleContainerTools/skaffold) can build a Docker image locally and deploy it to 
+your cluster without pushing it to any repository. Please install it following the [
+official docs](https://skaffold.dev/docs/getting-started/#installing-skaffold)
+
+Then run:
+
+```bash
+skaffold run
+```
 
 ## Documentation
 
