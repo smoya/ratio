@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/smoya/ratio/pkg/rate"
@@ -56,8 +59,26 @@ func main() {
 		rate.SlideWindowRateLimiter(storage, true),
 	)
 
+	ensureInterruptionsGracefullyShutdown(storage)
+
 	ratio.RegisterRateLimitServiceServer(s, grpcServer)
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+func ensureInterruptionsGracefullyShutdown(s rate.SlideWindowStorage) {
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		<-c
+		log.Println("Shutting down ratio...")
+
+		_ = s.Close()
+
+		// TODO notify on close and remove this sleep.
+		time.Sleep(time.Second)
+
+		os.Exit(0)
+	}()
 }

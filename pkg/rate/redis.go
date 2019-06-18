@@ -2,6 +2,7 @@ package rate
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 
 // Rediser is a Redis Client interface. As redis lib does not have any interface, this gets useful for testing.
 type Rediser interface {
+	io.Closer
 	ZRemRangeByScore(key, min, max string) *redis.IntCmd
 	ZCount(key, min, max string) *redis.IntCmd
 	ZAdd(key string, members ...redis.Z) *redis.IntCmd
@@ -63,6 +65,10 @@ func (s redisSlideWindowStorage) Count(key string, until time.Time) (int, error)
 
 func (s redisSlideWindowStorage) Flush() error {
 	return s.r.FlushAll().Err()
+}
+
+func (s redisSlideWindowStorage) Close() error {
+	return s.r.Close()
 }
 
 func (s redisSlideWindowStorage) toMilliseconds(t time.Time) int {

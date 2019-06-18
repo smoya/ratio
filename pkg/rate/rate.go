@@ -111,7 +111,3 @@ func SlideWindowRateLimiter(s SlideWindowStorage, async bool) Limiter {
 		return int(hits) < l.Quantity, nil
 	}
 }
-
-type inMemorySlideWindowStorage struct {
-	store map[string][]time.Time
-}

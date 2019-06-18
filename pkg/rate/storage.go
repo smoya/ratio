@@ -1,13 +1,21 @@
 package rate
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 // SlideWindowStorage represents the storage behind the Slide Window limiter algorithm
 type SlideWindowStorage interface {
+	io.Closer
 	Add(key string, now time.Time, expireIn time.Duration) error
 	Drop(key string, until time.Time) (int, error)
 	Count(key string, until time.Time) (int, error)
 	Flush() error
+}
+
+type inMemorySlideWindowStorage struct {
+	store map[string][]time.Time
 }
 
 // NewInMemorySlideWindowStorage creates a new InMemory SlideWindowStorage.
@@ -59,5 +67,10 @@ func (s inMemorySlideWindowStorage) Count(key string, until time.Time) (int, err
 
 func (s *inMemorySlideWindowStorage) Flush() error {
 	s.store = make(map[string][]time.Time)
+	return nil
+}
+
+func (s inMemorySlideWindowStorage) Close() error {
+	// no-op
 	return nil
 }
