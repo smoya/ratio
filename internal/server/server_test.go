@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/smoya/ratio/pkg/rate"
@@ -11,18 +12,34 @@ import (
 	ratio "github.com/smoya/ratio/api/proto"
 )
 
-func noopLimiter(_ rate.Limit, _, _ string) (bool, error) {
-	return true, nil
+func noopLimiter(ok bool, err error) rate.Limiter {
+	return func(_ rate.Limit, _, _ string) (bool, error) {
+		return ok, err
+	}
 }
 
 func TestGRPC_RateLimit(t *testing.T) {
+	cases := []struct {
+		code ratio.RateLimitResponse_Code
+		ok   bool
+		err  error
+	}{
+		{code: ratio.RateLimitResponse_OK, ok: true},
+		{code: ratio.RateLimitResponse_OVER_LIMIT, ok: false},
+		{code: ratio.RateLimitResponse_UNKNOWN, err: errors.New("whatever error")},
+	}
 
-	s := NewGRPC(rate.NewLimit(rate.PerMinute, 5), noopLimiter)
-	r := ratio.RateLimitRequest{}
-	resp, err := s.RateLimit(context.TODO(), &r)
+	for _, c := range cases {
+		s := NewGRPC(rate.NewLimit(rate.PerMinute, 5), noopLimiter(c.ok, c.err))
+		resp, err := s.RateLimit(context.Background(), &ratio.RateLimitRequest{})
 
-	assert.NoError(t, err)
-	assert.Equal(t, &ratio.RateLimitResponse{
-		Code: ratio.RateLimitResponse_OK,
-	}, resp)
+		if c.err != nil {
+			assert.EqualError(t, err, c.err.Error())
+		} else {
+			assert.NoError(t, err)
+		}
+
+		assert.Equal(t, c.code, resp.Code)
+	}
+
 }
