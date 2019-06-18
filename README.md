@@ -133,6 +133,7 @@ ghz --config .ghz.json
 
 - Support for Redis Cluster. Read the reasons behind [here](/docs/decisions.md#storage)
 - Support for distributed in memory storage, with autodiscovery of `ratio` instances and broadcast between them.
+- Interface the logger and use a better implementation like [zap](https://github.com/uber-go/zap).
 - Instrument the server with a Prometheus endpoint exposing basic metrics.
 - Add benchmarks. 
 - Improve the K8s deploy adding different use cases:
