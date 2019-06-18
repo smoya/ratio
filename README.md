@@ -59,12 +59,20 @@ Please find ratio documentation in the [/docs](/docs) directory.
 This project was tested and compiled with Go 1.12. Even though it will probably compile in lower versions, we strongly 
 recommend using, at least, the mentioned one.
 
+Run `make build` in order to build the app. Consider adding the `GOOS` and `GOARCH` env var in case you want to cross compile it.
+
+> Note: This project preferred build mechanism is using Dockerfile, which it compiles the app inside a temporary container.
+
 ### Dependencies
 
 This project manage its dependencies via [Go modules](https://github.com/golang/go/wiki/Modules).
 
 Go modules automatically fetches the dependencies on compile time so no extra step should be performed.
 However, make sure your `GO111MODULE` env var is set to `true`, otherwise go modules will not be activated.
+
+### Tests
+
+Run `make test`.
 
 ### GRPC and Protobuf 
 
